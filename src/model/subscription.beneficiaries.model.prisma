@@ -1,0 +1,26 @@
+model SubscriptionBeneficiaries {
+  date_created              DateTime                 @default(now()) @db.Timestamp(0)
+  beneficiary_id            Int                      @id @default(autoincrement())
+  subscriber_id             Int
+  subscription_id           Int
+  beneficiary_first_name    String                   @db.VarChar(255)
+  beneficiary_last_name     String                   @db.VarChar(255)
+  beneficiary_date_of_birth DateTime                 @db.Date
+  language_preference       String                   @db.VarChar(255)
+  subscription_link_active  subscription_link_active
+  last_update_to            String?                  @db.VarChar(255)
+  last_update_at            DateTime?                @db.DateTime(0)
+  last_update_by            String?                  @db.VarChar(255)
+  kz_subscriber_orders      SubscriberOrders[]
+  kz_subscribers            Subscribers              @relation(fields: [subscriber_id], references: [subscriber_id], onDelete: Cascade, map: "fk_sben_subscriber_id")
+  kz_library_subscriptions  Subscriptions            @relation(fields: [subscription_id], references: [subscription_id], onDelete: Cascade, map: "fk_sben_subscription_id")
+  fulfillmentItems          FulfillmentItems[]
+
+  @@index([subscriber_id], map: "fk_sben_subscriber_id")
+  @@index([subscription_id], map: "fk_sben_subscription_id")
+}
+
+enum subscription_link_active {
+  yes
+  no
+}

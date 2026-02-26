@@ -1,0 +1,30 @@
+model Subscriptions {
+  subcription_date              DateTime                      @default(now()) @db.Timestamp(0)
+  subscription_id               Int                           @id @default(autoincrement())
+  subscriber_id                 Int
+  subcription_billing_frequency subcription_billing_frequency
+  no_of_beneficiaries           Int
+  subscription_status           subscription_status
+  subscription_expiry_date      DateTime                      @db.Date
+  last_update_to                String?                       @db.VarChar(255)
+  last_update_at                DateTime?                     @db.DateTime(0)
+  last_update_by                String?                       @db.VarChar(255)
+  kz_subscribers                Subscribers                   @relation(fields: [subscriber_id], references: [subscriber_id], onDelete: Cascade, map: "fk_libsub_subscriber_id")
+  kz_subscription_beneficiaries SubscriptionBeneficiaries[]
+
+  @@index([subscriber_id], map: "fk_libsub_subscriber_id")
+}
+
+enum subcription_billing_frequency {
+  monthly
+  quarterly
+  annually
+}
+
+enum subscription_status {
+  active
+  inactive
+  suspended
+  canceled
+  churned
+}

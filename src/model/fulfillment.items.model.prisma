@@ -1,0 +1,12 @@
+model FulfillmentItems {
+  date_created                  DateTime                  @default(now()) @db.Timestamp(0)
+  record_id                     BigInt                    @id @default(autoincrement())
+  fulfillment_id                BigInt
+  beneficiary_id                Int
+  book_id                       Int
+  kz_subscription_beneficiaries SubscriptionBeneficiaries @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade, map: "fk_fi_beneficiary_id")
+  kz_order_fulfillments         OrderFulfillments         @relation(fields: [fulfillment_id], references: [fulfillment_id], onDelete: Cascade, map: "fk_fi_fulfillment_id")
+
+  @@index([beneficiary_id], map: "fk_fi_beneficiary_id")
+  @@index([fulfillment_id], map: "fk_fi_fulfillment_id")
+}

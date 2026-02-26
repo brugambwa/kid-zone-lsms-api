@@ -1,0 +1,61 @@
+{
+  "name": "kidzone_api",
+  "version": "1.0.0",
+  "description": "KidZone Subscriber Management System API",
+  "main": "index.js",
+  "author": "Bobson Rugambwa",
+  "license": "MIT",
+    "scripts": {
+    "test": "jest --coverage",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "start": "yarn build && node ./dist/index.js",
+    "migrate": "npx prisma migrate",
+    "migrate:reset": "npx prisma migrate reset",
+    "generate": "npx prisma generate",
+    "migrate:deploy": "npx prisma migrate deploy",
+    "prisma:studio": "npx prisma studio",
+    "prepare": "husky",
+    "clean": "rimraf dist node_modules",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
+  },
+  "overrides": {
+    "string-width": "4.2.3",
+    "strip-ansi": "6.0.1",
+    "ansi-regex": "5.0.1",
+    "wrap-ansi": "7.0.0",
+    "string-length": "4.0.2"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/swagger": "^9.5.1",
+    "@fastify/swagger-ui": "^5.2.2",
+    "@prisma/client": "^6.18.0",
+    "dotenv": "^17.2.3",
+    "envalid": "^8.1.0",
+    "fastify": "^5.6.1",
+    "logform": "^2.7.0",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "9.2.0",
+    "@fastify/swagger": "^9.5.1",
+    "@fastify/swagger-ui": "^5.2.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.2",
+    "@types/supertest": "^6.0.3",
+    "cross-env": "^10.1.0",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.18.0",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

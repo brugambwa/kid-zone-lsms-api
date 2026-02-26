@@ -1,0 +1,16 @@
+model Subscribers {
+  date_created                  DateTime                    @default(now()) @db.Timestamp(0)
+  subscriber_id                 Int                         @id @default(autoincrement())
+  first_name                    String                      @db.VarChar(255)
+  last_name                     String                      @db.VarChar(255)
+  telephone_number              String                      @unique @db.VarChar(255)
+  email_address                 String                      @unique @db.VarChar(255)
+  village_id                    Int
+  home_address                  String                      @db.VarChar(255)
+  last_update_by                String?                     @db.VarChar(255)
+  last_update_to                String?                     @db.VarChar(255)
+  last_update_at                DateTime?                   @db.DateTime(0)
+  kz_library_subscriptions      Subscriptions[]
+  kz_subscriber_orders          SubscriberOrders[]
+  kz_subscription_beneficiaries SubscriptionBeneficiaries[]
+}

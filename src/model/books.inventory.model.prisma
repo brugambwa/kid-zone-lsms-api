@@ -1,0 +1,22 @@
+model BooksInventory {
+  book_id               Int           @id @default(autoincrement())
+  book_title            String        @db.VarChar(255)
+  book_author           String        @db.VarChar(255)
+  book_isbn             String        @db.VarChar(255)
+  no_of_copies          Int
+  book_genre            String?       @db.VarChar(255)
+  book_publication_year String?       @db.VarChar(4)
+  book_language         book_language
+  book_on_offer         book_on_offer
+}
+
+enum book_language {
+  en
+  fr
+  kin
+}
+
+enum book_on_offer {
+  yes
+  no
+}

@@ -22,6 +22,11 @@ WORKDIR /kidzone_api
 # Copy dependency files
 COPY package.json yarn.lock ./
 
+# Set npm registry and install production dependencies with extended timeout
+RUN yarn config set registry https://registry.npmjs.org && \
+    yarn install --frozen-lockfile --production --network-timeout 300000 && \
+    yarn cache clean
+
 # Install ONLY production dependencies
 RUN yarn install --frozen-lockfile --production && \
     yarn cache clean

@@ -1,4 +1,5 @@
 import { baseResponse, errorResponse, paginationQuerystring, paginationObject } from "./global.schema";
+import { beneficiarySchema } from "./beneficiaries.schema";
 
 const subscriptionSchema = {
   type: "object",
@@ -64,12 +65,34 @@ const createSubscriptionSchema = {
       "subcription_billing_frequency",
       "no_of_beneficiaries",
       "subscription_status",
+      "beneficiaries",
     ],
     properties: {
       subscriber_id: subscriptionSchema.properties.subscriber_id,
       subcription_billing_frequency: subscriptionSchema.properties.subcription_billing_frequency,
       no_of_beneficiaries: subscriptionSchema.properties.no_of_beneficiaries,
       subscription_status: subscriptionSchema.properties.subscription_status,
+      beneficiaries: {
+        type: "array",
+        minItems: 1,
+        items: {
+          type: "object",
+          required: [
+            "beneficiary_first_name",
+            "beneficiary_last_name",
+            "beneficiary_date_of_birth",
+            "language_preference",
+            "subscription_link_active",
+          ],
+          properties: {
+            beneficiary_first_name: beneficiarySchema.properties.beneficiary_first_name,
+            beneficiary_last_name: beneficiarySchema.properties.beneficiary_last_name,
+            beneficiary_date_of_birth: beneficiarySchema.properties.beneficiary_date_of_birth,
+            language_preference: beneficiarySchema.properties.language_preference,
+            subscription_link_active: beneficiarySchema.properties.subscription_link_active,
+          },
+        },
+      },
     },
   },
   response: {

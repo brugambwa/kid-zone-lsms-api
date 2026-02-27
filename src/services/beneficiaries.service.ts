@@ -11,7 +11,11 @@ export class BeneficiaryService {
   async createSubscriptionBeneficiary(
     subscriptionBeneficiary: Prisma.SubscriptionBeneficiariesUncheckedCreateInput,
   ): Promise<SubscriptionBeneficiaries> {
-    return await this.beneficiaryRepository.createSubscriptionBeneficiary(subscriptionBeneficiary);
+    const createBeneficiaryObj = {
+      ...subscriptionBeneficiary,
+      beneficiary_date_of_birth: new Date(subscriptionBeneficiary.beneficiary_date_of_birth).toISOString(),
+    } as Prisma.SubscriptionBeneficiariesUncheckedCreateInput;
+    return await this.beneficiaryRepository.createSubscriptionBeneficiary(createBeneficiaryObj);
   }
 
   async getAllBeneficiaries(

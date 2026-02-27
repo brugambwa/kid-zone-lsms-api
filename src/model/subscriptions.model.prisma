@@ -13,6 +13,8 @@ model Subscriptions {
   kz_subscription_beneficiaries SubscriptionBeneficiaries[]
 
   @@index([subscriber_id], map: "fk_libsub_subscriber_id")
+
+  @@map("kz_library_subscriptions")
 }
 
 enum subcription_billing_frequency {

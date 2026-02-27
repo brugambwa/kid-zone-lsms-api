@@ -13,4 +13,6 @@ model Subscribers {
   kz_library_subscriptions      Subscriptions[]
   kz_subscriber_orders          SubscriberOrders[]
   kz_subscription_beneficiaries SubscriptionBeneficiaries[]
+
+  @@map("kz_subscribers")
 }

@@ -17,6 +17,8 @@ model SubscriberOrders {
 
   @@index([beneficiary_id], map: "fk_sord_beneficiary_id")
   @@index([subscriber_id], map: "fk_sord_subscriber_id")
+
+  @@map("kz_subscriber_orders")
 }
 
 enum fullfilment_frequency {

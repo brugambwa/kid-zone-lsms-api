@@ -9,4 +9,6 @@ model FulfillmentItems {
 
   @@index([beneficiary_id], map: "fk_fi_beneficiary_id")
   @@index([fulfillment_id], map: "fk_fi_fulfillment_id")
+
+  @@map("kz_fulfillment_items")
 }

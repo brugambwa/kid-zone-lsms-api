@@ -18,6 +18,8 @@ model SubscriptionBeneficiaries {
 
   @@index([subscriber_id], map: "fk_sben_subscriber_id")
   @@index([subscription_id], map: "fk_sben_subscription_id")
+
+  @@map("kz_subscription_beneficiaries")
 }
 
 enum subscription_link_active {

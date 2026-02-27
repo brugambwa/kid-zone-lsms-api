@@ -8,6 +8,8 @@ model BooksInventory {
   book_publication_year String?       @db.VarChar(4)
   book_language         book_language
   book_on_offer         book_on_offer
+
+  @@map("kz_books_inventory")
 }
 
 enum book_language {

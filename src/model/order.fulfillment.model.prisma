@@ -11,6 +11,8 @@ model OrderFulfillments {
   kz_subscriber_orders SubscriberOrders   @relation(fields: [order_id], references: [order_id], onDelete: Cascade, map: "fk_of_subscriber_id")
 
   @@index([order_id], map: "fk_of_subscriber_id")
+
+  @@map("kz_order_fulfillments")
 }
 
 enum fulfillment_status {

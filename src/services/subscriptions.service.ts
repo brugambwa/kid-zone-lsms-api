@@ -1,11 +1,21 @@
-import { subscription_status, Subscriptions, subcription_billing_frequency, Prisma } from "@prisma/client";
+import {
+  subscription_status,
+  Subscriptions,
+  subcription_billing_frequency,
+  Prisma,
+  subscription_link_active,
+} from "@prisma/client";
 import { SubscriptionImplementationRepository } from "../repositories/implementations/subscriptions.implementation";
+import { SubscriptionBeneficiariesImplementationRepository } from "../repositories/implementations/beneficiaries.implementation";
+import { prismaDBConn } from "../config/prisma";
 
 export class SubscriptionService {
   private readonly subscriptionRepository: SubscriptionImplementationRepository;
+  private readonly beneficiariesRepository: SubscriptionBeneficiariesImplementationRepository;
 
   constructor() {
     this.subscriptionRepository = new SubscriptionImplementationRepository();
+    this.beneficiariesRepository = new SubscriptionBeneficiariesImplementationRepository();
   }
 
   async createSubscription(
@@ -13,14 +23,42 @@ export class SubscriptionService {
     subcription_billing_frequency: subcription_billing_frequency,
     no_of_beneficiaries: number,
     subscription_status: subscription_status,
+    beneficiaries: {
+      beneficiary_first_name: string;
+      beneficiary_last_name: string;
+      beneficiary_date_of_birth: string;
+      language_preference: string;
+      subscription_link_active: subscription_link_active;
+    }[],
   ): Promise<Subscriptions> {
-    const subscriptionData = {
-      subscriber_id,
-      subcription_billing_frequency,
-      no_of_beneficiaries,
-      subscription_status,
-    } as Prisma.SubscriptionsUncheckedCreateInput;
-    return await this.subscriptionRepository.createSubscription(subscriptionData);
+    return await prismaDBConn.$transaction(async (tx) => {
+      const subscriptionData = {
+        subscriber_id,
+        subcription_billing_frequency,
+        no_of_beneficiaries,
+        subscription_expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        subscription_status,
+      } as Prisma.SubscriptionsUncheckedCreateInput;
+
+      const newSubscription = await tx.subscriptions.create({
+        data: subscriptionData,
+      });
+
+      const beneficiariesData: Prisma.SubscriptionBeneficiariesUncheckedCreateInput[] = beneficiaries.map(
+        (beneficiary) => ({
+          ...beneficiary,
+          beneficiary_date_of_birth: new Date(beneficiary.beneficiary_date_of_birth).toISOString(),
+          subscriber_id,
+          subscription_id: newSubscription.subscription_id,
+        }),
+      );
+
+      await tx.subscriptionBeneficiaries.createMany({
+        data: beneficiariesData,
+      });
+
+      return newSubscription;
+    });
   }
 
   async getAllSubscriptions(

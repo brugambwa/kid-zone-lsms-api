@@ -12,19 +12,32 @@ export class SubscriptionsController {
   }
 
   async createSubscription(request: FastifyRequest, reply: FastifyReply) {
-    const { subscriber_id, subcription_billing_frequency, no_of_beneficiaries, subscription_status } =
-      request.body as {
-        subscriber_id: number;
-        subcription_billing_frequency: string;
-        no_of_beneficiaries: number;
-        subscription_status: string;
-      };
+    const {
+      subscriber_id,
+      subcription_billing_frequency,
+      no_of_beneficiaries,
+      subscription_status,
+      beneficiaries,
+    } = request.body as {
+      subscriber_id: number;
+      subcription_billing_frequency: string;
+      no_of_beneficiaries: number;
+      subscription_status: string;
+      beneficiaries: {
+        beneficiary_first_name: string;
+        beneficiary_last_name: string;
+        beneficiary_date_of_birth: string;
+        language_preference: string;
+        subscription_link_active: boolean;
+      }[];
+    };
 
     const newSubscription = await this.subscriptionService.createSubscription(
       subscriber_id,
       subcription_billing_frequency as any,
       no_of_beneficiaries,
       subscription_status as any,
+      beneficiaries as any,
     );
     logger.info(`Subscriber created successfully with ID ${newSubscription.subscription_id}.`);
     return ResponseHandler.success(reply, newSubscription, 100, "Subscription created successfully", 201);

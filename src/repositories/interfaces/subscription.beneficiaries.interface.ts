@@ -1,19 +1,24 @@
-import { SubscriptionBeneficiaries } from "@prisma/client";
+import { SubscriptionBeneficiaries, Prisma, subscription_link_active } from "@prisma/client";
 
 export interface SubscriptionBeneficiariesRepository {
   createSubscriptionBeneficiary(
-    subscriptionBeneficiary: Omit<SubscriptionBeneficiaries, "id" | "createdAt" | "updatedAt">,
+    subscriptionBeneficiary: Prisma.SubscriptionBeneficiariesUncheckedCreateInput,
   ): Promise<SubscriptionBeneficiaries>;
-  getBySubscriptionID(
-    subscription_id: number,
+  getAllBeneficiaries(
     page: number,
     limit: number,
-  ): Promise<SubscriptionBeneficiaries[]>;
-  getBySubcriberID(subscriber_id: number, page: number, limit: number): Promise<SubscriptionBeneficiaries[]>;
+  ): Promise<{ data: SubscriptionBeneficiaries[]; total: number }>;
   getByBeneficiaryID(beneficiary_id: number): Promise<SubscriptionBeneficiaries[]>;
+  getBySubcriberID(subscriber_id: number): Promise<SubscriptionBeneficiaries[]>;
+  getBySubscriptionID(subscription_id: number): Promise<SubscriptionBeneficiaries[]>;
+  getByLinkStatus(
+    subscription_link_active: subscription_link_active,
+    page: number,
+    limit: number,
+  ): Promise<{ data: SubscriptionBeneficiaries[]; total: number }>;
   updateSubscriptionBeneficiary(
     id: number,
-    subscriptionBeneficiary: Partial<Omit<SubscriptionBeneficiaries, "id" | "createdAt" | "updatedAt">>,
+    subscriptionBeneficiary: Prisma.SubscriptionBeneficiariesUncheckedUpdateInput,
   ): Promise<SubscriptionBeneficiaries>;
   deleteSubscriptionBeneficiary(id: number): Promise<void>;
 }

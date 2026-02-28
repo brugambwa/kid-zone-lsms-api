@@ -29,6 +29,9 @@ export class SubscriptionsController {
         beneficiary_date_of_birth: string;
         language_preference: string;
         subscription_link_active: boolean;
+        no_of_books: number;
+        fullfilment_frequency: string;
+        fullfilment_start_date: string;
       }[];
     };
 

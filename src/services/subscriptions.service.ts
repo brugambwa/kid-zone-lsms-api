@@ -29,6 +29,9 @@ export class SubscriptionService {
       beneficiary_date_of_birth: string;
       language_preference: string;
       subscription_link_active: subscription_link_active;
+      no_of_books: number;
+      fullfilment_frequency: string;
+      fullfilment_start_date: string;
     }[],
   ): Promise<Subscriptions> {
     return await prismaDBConn.$transaction(async (tx) => {
@@ -46,15 +49,37 @@ export class SubscriptionService {
 
       const beneficiariesData: Prisma.SubscriptionBeneficiariesUncheckedCreateInput[] = beneficiaries.map(
         (beneficiary) => ({
-          ...beneficiary,
+          beneficiary_first_name: beneficiary.beneficiary_first_name,
+          beneficiary_last_name: beneficiary.beneficiary_last_name,
+          language_preference: beneficiary.language_preference,
+          subscription_link_active: beneficiary.subscription_link_active,
           beneficiary_date_of_birth: new Date(beneficiary.beneficiary_date_of_birth).toISOString(),
           subscriber_id,
           subscription_id: newSubscription.subscription_id,
         }),
       );
 
-      await tx.subscriptionBeneficiaries.createMany({
-        data: beneficiariesData,
+      const newBeneficiaries = await Promise.all(
+        beneficiariesData.map((data) =>
+          tx.subscriptionBeneficiaries.create({ data, select: { beneficiary_id: true } }),
+        ),
+      );
+
+      const beneficiariesOrderData: Prisma.SubscriberOrdersUncheckedCreateInput[] = beneficiaries.map(
+        (beneficiary, index) => ({
+          subscriber_id,
+          beneficiary_id: newBeneficiaries[index].beneficiary_id,
+          subscription_id: newSubscription.subscription_id,
+          no_of_books: beneficiary.no_of_books,
+          fullfilment_frequency: beneficiary.fullfilment_frequency as any,
+          fullfilment_start_date: new Date(beneficiary.fullfilment_start_date).toISOString(),
+          next_fulfilment_date: new Date(beneficiary.fullfilment_start_date).toISOString(),
+          order_status: "active",
+        }),
+      );
+
+      await tx.subscriberOrders.createMany({
+        data: beneficiariesOrderData,
       });
 
       return newSubscription;

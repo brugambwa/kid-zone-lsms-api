@@ -21,6 +21,9 @@ export class BeneficiariesController {
       beneficiary_date_of_birth,
       language_preference,
       subscription_link_active,
+      no_of_books,
+      fullfilment_frequency,
+      fullfilment_start_date,
     } = req.body as {
       subscription_id: number;
       subscriber_id: number;
@@ -29,6 +32,9 @@ export class BeneficiariesController {
       beneficiary_date_of_birth: Date;
       language_preference: string;
       subscription_link_active: subscription_link_active;
+      no_of_books: number;
+      fullfilment_frequency: string;
+      fullfilment_start_date: string;
     };
 
     const newBeneficiary = await this.beneficiariesService.createSubscriptionBeneficiary({
@@ -39,6 +45,9 @@ export class BeneficiariesController {
       beneficiary_date_of_birth,
       language_preference,
       subscription_link_active,
+      no_of_books,
+      fullfilment_frequency,
+      fullfilment_start_date,
     });
 
     logger.info(`Subscription beneficiary created successfully with ID ${newBeneficiary.beneficiary_id}.`);

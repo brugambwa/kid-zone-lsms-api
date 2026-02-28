@@ -11,6 +11,7 @@ model Subscriptions {
   last_update_by                String?                       @db.VarChar(255)
   kz_subscribers                Subscribers                   @relation(fields: [subscriber_id], references: [subscriber_id], onDelete: Cascade, map: "fk_libsub_subscriber_id")
   kz_subscription_beneficiaries SubscriptionBeneficiaries[]
+  kz_subscriber_orders          SubscriberOrders[]
 
   @@index([subscriber_id], map: "fk_libsub_subscriber_id")
 

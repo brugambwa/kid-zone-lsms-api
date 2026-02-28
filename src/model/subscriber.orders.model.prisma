@@ -1,22 +1,25 @@
 model SubscriberOrders {
   order_date                    DateTime                  @default(now()) @db.Timestamp(0)
   order_id                      Int                       @id @default(autoincrement())
+  subscription_id               Int
   subscriber_id                 Int
   beneficiary_id                Int
   no_of_books                   Int
   fullfilment_frequency         fullfilment_frequency     @default(bi_weekly)
   fullfilment_start_date        DateTime                  @db.Date
   next_fulfilment_date          DateTime                  @db.Date
-  order_status                  orders_order_status
+  order_status                  order_status
   last_update_by                String?                   @db.VarChar(255)
   last_update_to                String?                   @db.VarChar(255)
   last_update_at                DateTime?                 @db.DateTime(0)
   kz_subscription_beneficiaries SubscriptionBeneficiaries @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade, map: "fk_sord_beneficiary_id")
+  kz_subscriptions              Subscriptions            @relation(fields: [subscription_id], references: [subscription_id], onDelete: Cascade, map: "fk_sord_subscription_id")
   kz_subscribers                Subscribers               @relation(fields: [subscriber_id], references: [subscriber_id], onDelete: Cascade, map: "fk_sord_subscriber_id")
   orderFulfillments             OrderFulfillments[]
 
   @@index([beneficiary_id], map: "fk_sord_beneficiary_id")
   @@index([subscriber_id], map: "fk_sord_subscriber_id")
+  @@index([subscription_id], map: "fk_sord_subscription_id")
 
   @@map("kz_subscriber_orders")
 }
@@ -26,7 +29,7 @@ enum fullfilment_frequency {
   bi_weekly
 }
 
-enum orders_order_status {
+enum order_status {
   active
   inactive
   suspended

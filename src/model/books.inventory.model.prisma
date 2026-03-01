@@ -1,13 +1,20 @@
 model BooksInventory {
+  date_created          DateTime      @default(now()) @db.Timestamp(0)
   book_id               Int           @id @default(autoincrement())
+  book_isbn             String        @unique @db.VarChar(255)
   book_title            String        @db.VarChar(255)
   book_author           String        @db.VarChar(255)
-  book_isbn             String        @db.VarChar(255)
-  no_of_copies          Int
-  book_genre            String?       @db.VarChar(255)
-  book_publication_year String?       @db.VarChar(4)
+  description           String?       @db.TinyText
   book_language         book_language
+  book_genre            String?       @db.VarChar(255)
+  collection            String        @db.VarChar(255)
+  book_publication_year String?       @db.VarChar(4)
+  book_length           Int
+  no_of_copies          Int
   book_on_offer         book_on_offer
+  last_update_by        String?       @db.VarChar(255)
+  last_update_to        String?       @db.VarChar(255)
+  last_update_at        DateTime?     @db.DateTime(0)
 
   @@map("kz_books_inventory")
 }

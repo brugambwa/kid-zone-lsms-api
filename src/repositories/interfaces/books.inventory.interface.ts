@@ -1,16 +1,40 @@
-import { BooksInventory } from "@prisma/client";
+import { BooksInventory, book_language, book_on_offer } from "@prisma/client";
 
-export interface BooksInventoryRepository {
+export interface BooksInventoryRepoInterface {
   createBook(book: BooksInventory): Promise<BooksInventory>;
   getBookById(book_id: number): Promise<BooksInventory | null>;
-  getAllBooks(page: number, limit: number): Promise<BooksInventory[]>;
+  getAllBooks(page: number, limit: number): Promise<{ data: BooksInventory[]; total: number }>;
   getBookByISBN(isbn: string): Promise<BooksInventory | null>;
-  getBooksByTitle(title: string, page: number, limit: number): Promise<BooksInventory[]>;
-  getBooksByAuthor(author: string, page: number, limit: number): Promise<BooksInventory[]>;
-  getBooksByLanguage(language: string, page: number, limit: number): Promise<BooksInventory[]>;
-  getBooksByGenre(genre: string, page: number, limit: number): Promise<BooksInventory[]>;
-  getBooksByPublicationYear(year: string, page: number, limit: number): Promise<BooksInventory[]>;
-  getBooksByAvailability(isAvailable: boolean, page: number, limit: number): Promise<BooksInventory[]>;
+  getBooksByTitle(
+    title: string,
+    page: number,
+    limit: number,
+  ): Promise<{ data: BooksInventory[]; total: number }>;
+  getBooksByAuthor(
+    author: string,
+    page: number,
+    limit: number,
+  ): Promise<{ data: BooksInventory[]; total: number }>;
+  getBooksByLanguage(
+    language: book_language,
+    page: number,
+    limit: number,
+  ): Promise<{ data: BooksInventory[]; total: number }>;
+  getBooksByGenre(
+    genre: string,
+    page: number,
+    limit: number,
+  ): Promise<{ data: BooksInventory[]; total: number }>;
+  getBooksByPublicationYear(
+    year: string,
+    page: number,
+    limit: number,
+  ): Promise<{ data: BooksInventory[]; total: number }>;
+  getBooksByAvailability(
+    book_on_offer: book_on_offer,
+    page: number,
+    limit: number,
+  ): Promise<{ data: BooksInventory[]; total: number }>;
   updateBook(
     book_id: number,
     book: Partial<Omit<BooksInventory, "book_id" | "date_created">>,

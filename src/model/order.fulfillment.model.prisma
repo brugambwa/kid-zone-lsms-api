@@ -3,6 +3,8 @@ model OrderFulfillments {
   fulfillment_id       BigInt             @id @default(autoincrement())
   order_id             Int
   notes                String             @db.TinyText
+  fulfillment_date     DateTime          @db.DateTime(0)
+  expected_return_date DateTime?          @db.DateTime(0)
   fulfillment_status   fulfillment_status @default(due)
   last_update_by       String?            @db.VarChar(255)
   last_update_to       String?            @db.VarChar(255)

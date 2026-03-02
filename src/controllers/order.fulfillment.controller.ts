@@ -37,8 +37,8 @@ export class OrderFulfillmentController {
       notes,
       fulfillment_status,
       fulfillment_date,
-      expected_return_date,
       fulfillment_items,
+      expected_return_date,
     );
 
     logger.info(`Order fulfillment created successfully with ID ${newOrderFulfillment.fulfillment_id}.`);

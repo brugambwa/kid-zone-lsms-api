@@ -3,12 +3,11 @@ model FulfillmentItems {
   record_id                     BigInt                    @id @default(autoincrement())
   fulfillment_id                BigInt
   beneficiary_id                Int
-  book_id                       Int
+  book_isbn                     String                    @db.VarChar(191)
   kz_subscription_beneficiaries SubscriptionBeneficiaries @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade, map: "fk_fi_beneficiary_id")
   kz_order_fulfillments         OrderFulfillments         @relation(fields: [fulfillment_id], references: [fulfillment_id], onDelete: Cascade, map: "fk_fi_fulfillment_id")
 
   @@index([beneficiary_id], map: "fk_fi_beneficiary_id")
   @@index([fulfillment_id], map: "fk_fi_fulfillment_id")
-
   @@map("kz_fulfillment_items")
 }

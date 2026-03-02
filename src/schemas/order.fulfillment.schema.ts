@@ -83,7 +83,7 @@ const getByIDSchema = {
     type: "object",
     required: ["fulfillment_id"],
     properties: {
-      fulfillment_id: { type: "number" },
+      fulfillment_id: { type: "string" },
     },
   },
   response: {
@@ -109,7 +109,7 @@ const getByOrderIDSchema = {
     type: "object",
     required: ["order_id"],
     properties: {
-      order_id: { type: "number" },
+      order_id: { type: "string" },
     },
   },
   querystring: paginationQuerystring,
@@ -177,7 +177,7 @@ const updateOrderFulfillmentSchema = {
     type: "object",
     required: ["fulfillment_id"],
     properties: {
-      fulfillment_id: { type: "number" },
+      fulfillment_id: { type: "string" },
     },
   },
   body: {
@@ -185,7 +185,7 @@ const updateOrderFulfillmentSchema = {
     properties: {
       notes: fulfillmentSchema.properties.notes,
       fulfillment_status: fulfillmentSchema.properties.fulfillment_status,
-      expected_return_date: { type: "string", format: "date-time", nullable: true },
+      expected_return_date: fulfillmentSchema.properties.expected_return_date,
     },
     additionalProperties: false,
   },

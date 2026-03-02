@@ -4,11 +4,13 @@ import { fulfillment_status } from "@prisma/client";
 const fulfillmentSchema = {
   type: "object",
   properties: {
+    date_created: { type: "string", format: "date-time" },
     fulfillment_id: { type: "number" },
     order_id: { type: "number" },
     notes: { type: "string", nullable: true },
+    fulfillment_date: { type: "string", format: "date", nullable: true },
+    expected_return_date: { type: "string", format: "date", nullable: true },
     fulfillment_status: { type: "string", enum: Object.values(fulfillment_status) },
-    date_created: { type: "string", format: "date-time" },
     last_update_by: { type: "string", maxLength: 255, nullable: true },
     last_update_to: { type: "string", maxLength: 255, nullable: true },
     last_update_at: { type: "string", format: "date-time", nullable: true },
@@ -46,13 +48,13 @@ const createFulfillmentSchema = {
   tags: ["Order Fulfillment"],
   body: {
     type: "object",
-    required: ["order_id", "fulfillment_status"],
+    required: ["order_id", "beneficiary_id", "fulfillment_status", "fulfillment_items"],
     properties: {
       order_id: fulfillmentSchema.properties.order_id,
       beneficiary_id: { type: "number" },
       notes: fulfillmentSchema.properties.notes,
-      fulfillment_date: { type: "string", format: "date-time", nullable: true },
-      expected_return_date: { type: "string", format: "date-time", nullable: true },
+      fulfillment_date: fulfillmentSchema.properties.fulfillment_date,
+      expected_return_date: fulfillmentSchema.properties.expected_return_date,
       fulfillment_status: fulfillmentSchema.properties.fulfillment_status,
       fulfillment_items: {
         type: "array",
@@ -81,7 +83,7 @@ const getByIDSchema = {
     type: "object",
     required: ["fulfillment_id"],
     properties: {
-      fulfillment_id: { type: "number" },
+      fulfillment_id: { type: "string" },
     },
   },
   response: {
@@ -107,7 +109,7 @@ const getByOrderIDSchema = {
     type: "object",
     required: ["order_id"],
     properties: {
-      order_id: { type: "number" },
+      order_id: { type: "string" },
     },
   },
   querystring: paginationQuerystring,
@@ -175,7 +177,7 @@ const updateOrderFulfillmentSchema = {
     type: "object",
     required: ["fulfillment_id"],
     properties: {
-      fulfillment_id: { type: "number" },
+      fulfillment_id: { type: "string" },
     },
   },
   body: {
@@ -183,7 +185,7 @@ const updateOrderFulfillmentSchema = {
     properties: {
       notes: fulfillmentSchema.properties.notes,
       fulfillment_status: fulfillmentSchema.properties.fulfillment_status,
-      expected_return_date: { type: "string", format: "date-time", nullable: true },
+      expected_return_date: fulfillmentSchema.properties.expected_return_date,
     },
     additionalProperties: false,
   },

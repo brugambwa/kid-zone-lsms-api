@@ -37,8 +37,8 @@ export class OrderFulfillmentController {
       notes,
       fulfillment_status,
       fulfillment_date,
-      expected_return_date,
       fulfillment_items,
+      expected_return_date,
     );
 
     logger.info(`Order fulfillment created successfully with ID ${newOrderFulfillment.fulfillment_id}.`);
@@ -52,12 +52,12 @@ export class OrderFulfillmentController {
   }
 
   async getByID(req: FastifyRequest, res: FastifyReply) {
-    const { fulfillment_id } = req.params as { fulfillment_id: number };
-    const orderFulfillment = await this.orderFulfillmentService.getByID(fulfillment_id);
+    const { fulfillment_id } = req.params as { fulfillment_id: string };
+    const orderFulfillment = await this.orderFulfillmentService.getByID(Number(fulfillment_id));
 
     if (!orderFulfillment) {
       logger.warn(`Order fulfillment with ID ${fulfillment_id} not found.`);
-      return ResponseHandler.error(res, "Order fulfillment not found.", 101, 200);
+      return ResponseHandler.error(res, `Order fulfillment with ID ${fulfillment_id} not found.`, 101, 200);
     }
 
     logger.info(`Order fulfillment with ID ${fulfillment_id} retrieved successfully.`);
@@ -79,11 +79,12 @@ export class OrderFulfillmentController {
   }
 
   async getByOrderID(req: FastifyRequest, res: FastifyReply) {
-    const { order_id } = req.params as { order_id: number };
+    const { order_id } = req.params as { order_id: string };
     return PaginationHandler.handlePaginatedRequest(
       req,
       res,
-      (page: number, limit: number) => this.orderFulfillmentService.getByOrderID(order_id, page, limit),
+      (page: number, limit: number) =>
+        this.orderFulfillmentService.getByOrderID(Number(order_id), page, limit),
       {
         notFound: `No order fulfillment records found for order ID ${order_id}.`,
         notFoundLog: `No order fulfillment records found for order ID ${order_id}.`,

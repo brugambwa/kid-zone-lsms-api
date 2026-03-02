@@ -15,16 +15,15 @@ export class OrderFulfillmentService {
     notes: string,
     fulfillment_status: fulfillment_status,
     fulfillment_date: Date,
-    expected_return_date: Date,
     fulfillment_items: any[],
+    expected_return_date?: Date,
   ): Promise<OrderFulfillments> {
     return await prismaDBConn.$transaction(async (tx) => {
       const orderFulfillmentData: Prisma.OrderFulfillmentsUncheckedCreateInput = {
         order_id: order_id,
-        notes: notes,
         fulfillment_status,
-        fulfillment_date,
-        expected_return_date,
+        fulfillment_date: new Date(fulfillment_date).toISOString(),
+        expected_return_date: expected_return_date ? new Date(expected_return_date).toISOString() : null,
       };
 
       const newOrderFulfillment = await tx.orderFulfillments.create({
@@ -35,7 +34,7 @@ export class OrderFulfillmentService {
         (item) => ({
           fulfillment_id: newOrderFulfillment.fulfillment_id,
           beneficiary_id: beneficiary_id,
-          book_id: item.book_id,
+          book_isbn: item.book_isbn,
         }),
       );
 

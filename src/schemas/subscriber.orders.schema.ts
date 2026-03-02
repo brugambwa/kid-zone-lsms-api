@@ -29,9 +29,9 @@ const successResponseList = {
 
 const subscriberOrderIdParam = {
   type: "object",
-  required: ["subscriber_order_id"],
+  required: ["order_id"],
   properties: {
-    subscriber_order_id: {
+    order_id: {
       type: "string",
       pattern: String.raw`^[1-9][0-9]*$`,
       description: "Subscriber Order ID",

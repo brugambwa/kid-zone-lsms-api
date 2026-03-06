@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest --coverage",
-    "dev": "npx prisma db push && nodemon src/index.ts",
+    "dev": "npx prisma db push --accept-data-loss && nodemon src/index.ts",
     "build": "tsc",
     "start": "yarn build && npx prisma migrate deploy && node ./dist/index.js",
     "migrate": "npx prisma migrate",

@@ -42,4 +42,3 @@ export async function authRoutes(fastify: FastifyInstance) {
     asyncWrapper(authController.updatePassword.bind(authController)),
   );
 }
-

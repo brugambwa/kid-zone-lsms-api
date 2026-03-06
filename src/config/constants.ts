@@ -56,6 +56,12 @@ export const env = cleanEnv(process.env, {
   SYSTEM_MEMBER_ID: num({ default: 0 }),
   SYSTEM_MEMBER_PROFILE_ID: num({ default: 0 }),
   SYSTEM_LINKED_MSISDN: str({ default: "250788000000" }),
+  // Auth & Google OAuth configuration
+  JWT_SECRET: str(),
+  JWT_EXPIRES_IN: str({ default: "1d" }),
+  GOOGLE_CLIENT_ID: str({ default: "" }),
+  GOOGLE_CLIENT_SECRET: str({ default: "" }),
+  GOOGLE_REDIRECT_URI: str({ default: "" }),
   ...(envConfigs[envPrefix as keyof typeof envConfigs] || envConfigs.DEV),
 });
 
@@ -66,3 +72,9 @@ export const LOG_LEVEL = env.LOG_LEVEL;
 export const CONNECTION_TIMEOUT = env.CONNECTION_TIMEOUT;
 export const KEEPALIVE_TIMEOUT = env.KEEPALIVE_TIMEOUT;
 export const BODY_LIMIT = env.BODY_LIMIT;
+export const JWT_SECRET = env.JWT_SECRET;
+export const JWT_EXPIRES_IN = env.JWT_EXPIRES_IN;
+export const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
+export const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
+export const GOOGLE_REDIRECT_URI = env.GOOGLE_REDIRECT_URI;
+

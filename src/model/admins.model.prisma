@@ -1,0 +1,41 @@
+model Admins {
+  date_created       DateTime           @default(now()) @db.Timestamp(0)
+  admin_id           Int                @id @default(autoincrement())
+
+  email_address      String             @unique @db.VarChar(255)
+  display_name       String             @db.VarChar(255)
+
+  password_hash      String?            @db.VarChar(255)
+  auth_provider      auth_provider      @default(local)
+  google_sub         String?            @unique @db.VarChar(255)
+  google_picture_url String?            @db.VarChar(512)
+
+  access_level       admin_access_level @default(support)
+  status             admin_status       @default(pending)
+  last_login_at      DateTime?          @db.DateTime(0)
+
+  last_update_by     String?            @db.VarChar(255)
+  last_update_to     String?            @db.VarChar(255)
+  last_update_at     DateTime?          @db.DateTime(0)
+
+  @@map("kz_admins")
+}
+
+enum auth_provider {
+  local
+  google
+}
+
+enum admin_access_level {
+  super_admin
+  admin
+  librarian
+  support
+}
+
+enum admin_status {
+  pending
+  active
+  suspended
+}
+

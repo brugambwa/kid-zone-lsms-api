@@ -27,12 +27,16 @@ RUN yarn config set registry https://registry.npmjs.org && \
     yarn install --frozen-lockfile --production --network-timeout 300000 && \
     yarn cache clean
 
-# Install ONLY production dependencies
-RUN yarn install --frozen-lockfile --production && \
+# Install prisma CLI for db push at container startup
+RUN yarn add prisma --dev && \
     yarn cache clean
 
 # Copy built application
 COPY --from=builder /kidzone_api/dist ./dist
+
+# Copy Prisma schema and config so db push can run at startup
+COPY --from=builder /kidzone_api/src/model ./src/model
+COPY --from=builder /kidzone_api/prisma.config.ts ./prisma.config.ts
 
 # Copy generated Prisma client from builder
 COPY --from=builder /kidzone_api/node_modules/.prisma ./node_modules/.prisma
@@ -50,4 +54,4 @@ RUN mkdir -p logs && \
 USER nodejs
 
 EXPOSE 3001
-CMD ["node", "./dist/index.js"]
+CMD ["sh", "-c", "npx prisma db push && node ./dist/index.js"]

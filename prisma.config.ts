@@ -7,5 +7,3 @@ config({ path: path.join(__dirname, ".env") });
 export default {
   schema: path.join("src/model"),
 };
-
-

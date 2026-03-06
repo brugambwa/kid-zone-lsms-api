@@ -94,8 +94,85 @@ const googleVerifySchema = {
   },
 } as const;
 
+const profileResponseSchema = {
+  type: "object",
+  properties: {
+    ...baseResponse,
+    data: adminSchema,
+  },
+} as const;
+
+const getProfileSchema = {
+  description: "Get current admin profile (requires Bearer token)",
+  tags: ["Auth"],
+  security: [{ bearerAuth: [] }],
+  response: {
+    200: profileResponseSchema,
+    401: errorResponse,
+    404: errorResponse,
+    500: errorResponse,
+  },
+} as const;
+
+const updateProfileBody = {
+  type: "object",
+  properties: {
+    display_name: { type: "string", minLength: 1 },
+    email_address: { type: "string", format: "email" },
+    google_picture_url: { type: "string" },
+  },
+} as const;
+
+const updateProfileSchema = {
+  description: "Update current admin profile (requires Bearer token)",
+  tags: ["Auth"],
+  security: [{ bearerAuth: [] }],
+  body: updateProfileBody,
+  response: {
+    200: profileResponseSchema,
+    400: errorResponse,
+    401: errorResponse,
+    404: errorResponse,
+    409: errorResponse,
+    500: errorResponse,
+  },
+} as const;
+
+const updatePasswordBody = {
+  type: "object",
+  required: ["old_password", "new_password", "confirm_password"],
+  properties: {
+    old_password: { type: "string", minLength: 6 },
+    new_password: { type: "string", minLength: 6 },
+    confirm_password: { type: "string", minLength: 6 },
+  },
+} as const;
+
+const updatePasswordSchema = {
+  description: "Update admin password (requires Bearer token, local accounts only)",
+  tags: ["Auth"],
+  security: [{ bearerAuth: [] }],
+  body: updatePasswordBody,
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        ...baseResponse,
+        data: { type: "null" },
+      },
+    },
+    400: errorResponse,
+    401: errorResponse,
+    404: errorResponse,
+    500: errorResponse,
+  },
+} as const;
+
 export const authSchemas = {
   login: loginSchema,
   googleVerify: googleVerifySchema,
+  getProfile: getProfileSchema,
+  updateProfile: updateProfileSchema,
+  updatePassword: updatePasswordSchema,
 };
 

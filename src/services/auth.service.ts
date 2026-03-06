@@ -101,6 +101,86 @@ export class AuthService {
     };
   }
 
+  async getProfile(admin_id: number) {
+    const admin = (await prismaAny.admins.findUnique({
+      where: { admin_id },
+    })) as AdminEntity | null;
+
+    if (!admin) {
+      throw new HttpError(404, "Admin not found.");
+    }
+
+    return this.sanitizeAdmin(admin);
+  }
+
+  async updateProfile(
+    admin_id: number,
+    data: { display_name?: string; email_address?: string; google_picture_url?: string },
+  ) {
+    const admin = (await prismaAny.admins.findUnique({
+      where: { admin_id },
+    })) as AdminEntity | null;
+
+    if (!admin) {
+      throw new HttpError(404, "Admin not found.");
+    }
+
+    if (data.email_address && data.email_address !== admin.email_address) {
+      const existing = (await prismaAny.admins.findUnique({
+        where: { email_address: data.email_address },
+      })) as AdminEntity | null;
+
+      if (existing) {
+        throw new HttpError(409, "Email address is already in use.");
+      }
+    }
+
+    const updatedAdmin = (await prismaAny.admins.update({
+      where: { admin_id },
+      data: {
+        ...(data.display_name && { display_name: data.display_name }),
+        ...(data.email_address && { email_address: data.email_address }),
+        ...(data.google_picture_url !== undefined && { google_picture_url: data.google_picture_url }),
+        last_update_at: new Date(),
+      },
+    })) as AdminEntity;
+
+    return this.sanitizeAdmin(updatedAdmin);
+  }
+
+  async updatePassword(admin_id: number, old_password: string, new_password: string, confirm_password: string) {
+    if (new_password !== confirm_password) {
+      throw new BadRequestError("New password and confirm password do not match.");
+    }
+
+    const admin = (await prismaAny.admins.findUnique({
+      where: { admin_id },
+    })) as AdminEntity | null;
+
+    if (!admin) {
+      throw new HttpError(404, "Admin not found.");
+    }
+
+    if (admin.auth_provider !== "local" || !admin.password_hash) {
+      throw new BadRequestError("Password update is only available for email/password accounts.");
+    }
+
+    const isValid = await bcrypt.compare(old_password, admin.password_hash);
+    if (!isValid) {
+      throw new HttpError(401, "Current password is incorrect.");
+    }
+
+    const hashed = await bcrypt.hash(new_password, 10);
+
+    await prismaAny.admins.update({
+      where: { admin_id },
+      data: {
+        password_hash: hashed,
+        last_update_at: new Date(),
+      },
+    });
+  }
+
   async handleGoogleUser(userInfo: GoogleUserInfo) {
     if (!userInfo.email || !userInfo.sub) {
       throw new BadRequestError("Invalid Google user info response.");

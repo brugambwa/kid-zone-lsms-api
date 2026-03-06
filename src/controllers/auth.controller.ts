@@ -10,6 +10,18 @@ type LoginBody = {
   password: string;
 };
 
+type UpdateProfileBody = {
+  display_name?: string;
+  email_address?: string;
+  google_picture_url?: string;
+};
+
+type UpdatePasswordBody = {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+};
+
 type GoogleVerifyBody = {
   credential: string;
 };
@@ -40,6 +52,38 @@ export class AuthController {
 
     logger.info(`Admin login successful for ${email}.`);
     return ResponseHandler.success(res, result, 100, "Login successful.");
+  }
+
+  async getProfile(req: FastifyRequest, res: FastifyReply) {
+    const admin_id = req.admin.sub;
+    const profile = await this.authService.getProfile(admin_id);
+
+    logger.info(`Admin profile retrieved for admin ID ${admin_id}.`);
+    return ResponseHandler.success(res, profile, 100, "Profile retrieved successfully.");
+  }
+
+  async updateProfile(req: FastifyRequest, res: FastifyReply) {
+    const admin_id = req.admin.sub;
+    const { display_name, email_address, google_picture_url } = req.body as UpdateProfileBody;
+
+    const updatedProfile = await this.authService.updateProfile(admin_id, {
+      display_name,
+      email_address,
+      google_picture_url,
+    });
+
+    logger.info(`Admin profile updated for admin ID ${admin_id}.`);
+    return ResponseHandler.success(res, updatedProfile, 100, "Profile updated successfully.");
+  }
+
+  async updatePassword(req: FastifyRequest, res: FastifyReply) {
+    const admin_id = req.admin.sub;
+    const { old_password, new_password, confirm_password } = req.body as UpdatePasswordBody;
+
+    await this.authService.updatePassword(admin_id, old_password, new_password, confirm_password);
+
+    logger.info(`Admin password updated for admin ID ${admin_id}.`);
+    return ResponseHandler.success(res, null, 100, "Password updated successfully.");
   }
 
   /**

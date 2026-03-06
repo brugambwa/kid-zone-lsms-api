@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { AuthService } from "../services/auth.service";
 import { ResponseHandler } from "../utils/response";
 import { logger } from "../utils/logger";
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } from "../config/constants";
+import { GOOGLE_CLIENT_ID } from "../config/constants";
 import { BadRequestError, HttpError } from "../utils/http.error";
 
 type LoginBody = {
@@ -10,8 +10,20 @@ type LoginBody = {
   password: string;
 };
 
-type GoogleCallbackBody = {
-  code: string;
+type GoogleVerifyBody = {
+  credential: string;
+};
+
+/** Tokeninfo response from GET https://oauth2.googleapis.com/tokeninfo?id_token=... */
+type GoogleTokenInfo = {
+  aud?: string;
+  sub: string;
+  email?: string;
+  email_verified?: string;
+  name?: string;
+  picture?: string;
+  error?: string;
+  error_description?: string;
 };
 
 export class AuthController {
@@ -30,67 +42,52 @@ export class AuthController {
     return ResponseHandler.success(res, result, 100, "Login successful.");
   }
 
-  async googleCallback(req: FastifyRequest, res: FastifyReply) {
-    const { code } = req.body as GoogleCallbackBody;
+  /**
+   * Verify Google ID token via tokeninfo endpoint.
+   * Frontend sends the credential (id_token) from Google Sign-In; we verify with Google and then find/create admin.
+   */
+  async googleVerify(req: FastifyRequest, res: FastifyReply) {
+    const { credential } = req.body as GoogleVerifyBody;
 
-    if (!code) {
-      throw new BadRequestError("Authorization code is required.");
+    if (!credential || typeof credential !== "string") {
+      throw new BadRequestError("Credential (id_token) is required.");
     }
 
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
-      throw new HttpError(500, "Google OAuth is not configured properly.");
+    if (!GOOGLE_CLIENT_ID) {
+      throw new HttpError(500, "Google OAuth client ID is not configured.");
     }
 
-    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        code,
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: GOOGLE_REDIRECT_URI,
-        grant_type: "authorization_code",
-      }),
-    });
+    const tokeninfoUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+    const tokeninfoResponse = await fetch(tokeninfoUrl);
 
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      logger.error(`Google token exchange failed: ${errorText}`);
-      throw new HttpError(401, "Failed to exchange authorization code with Google.");
+    if (!tokeninfoResponse.ok) {
+      const errorText = await tokeninfoResponse.text();
+      logger.error(`Google tokeninfo failed: ${errorText}`);
+      throw new HttpError(401, "Invalid or expired Google credential.");
     }
 
-    const tokenData = (await tokenResponse.json()) as {
-      access_token: string;
-      id_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope?: string;
-    };
+    const tokenInfo = (await tokeninfoResponse.json()) as GoogleTokenInfo;
 
-    if (!tokenData.access_token) {
-      throw new HttpError(401, "Google did not return an access token.");
+    if (tokenInfo.error) {
+      logger.error(`Google tokeninfo error: ${tokenInfo.error} - ${tokenInfo.error_description ?? ""}`);
+      throw new HttpError(401, tokenInfo.error_description ?? "Invalid Google credential.");
     }
 
-    const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
-      },
-    });
-
-    if (!userInfoResponse.ok) {
-      const errorText = await userInfoResponse.text();
-      logger.error(`Google userinfo fetch failed: ${errorText}`);
-      throw new HttpError(401, "Failed to fetch user info from Google.");
+    if (tokenInfo.aud !== GOOGLE_CLIENT_ID) {
+      logger.warn(`Token aud mismatch: got ${tokenInfo.aud}, expected ${GOOGLE_CLIENT_ID}`);
+      throw new HttpError(401, "Credential was not issued for this application.");
     }
 
-    const userInfo = (await userInfoResponse.json()) as {
-      sub: string;
-      email: string;
-      name?: string;
-      picture?: string;
-      email_verified?: boolean;
+    if (!tokenInfo.sub) {
+      throw new HttpError(401, "Invalid Google credential: missing sub.");
+    }
+
+    const userInfo = {
+      sub: tokenInfo.sub,
+      email: tokenInfo.email ?? "",
+      name: tokenInfo.name,
+      picture: tokenInfo.picture,
+      email_verified: tokenInfo.email_verified === "true",
     };
 
     const result = await this.authService.handleGoogleUser(userInfo);

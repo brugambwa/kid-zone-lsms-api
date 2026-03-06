@@ -16,9 +16,9 @@ export async function authRoutes(fastify: FastifyInstance) {
   );
 
   fastify.post(
-    "/google-callback",
-    { schema: authSchemas.googleCallback },
-    asyncWrapper(authController.googleCallback.bind(authController)),
+    "/google-verify",
+    { schema: authSchemas.googleVerify },
+    asyncWrapper(authController.googleVerify.bind(authController)),
   );
 }
 

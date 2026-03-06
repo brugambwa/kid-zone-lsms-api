@@ -36,11 +36,14 @@ const loginBody = {
   },
 } as const;
 
-const googleCallbackBody = {
+const googleVerifyBody = {
   type: "object",
-  required: ["code"],
+  required: ["credential"],
   properties: {
-    code: { type: "string" },
+    credential: {
+      type: "string",
+      description: "Google ID token (credential) from Sign-In response",
+    },
   },
 } as const;
 
@@ -63,10 +66,11 @@ const loginSchema = {
   },
 } as const;
 
-const googleCallbackSchema = {
-  description: "Handle Google OAuth callback and login or create admin",
+const googleVerifySchema = {
+  description:
+    "Verify Google ID token via tokeninfo. Send the credential (id_token) from Google Sign-In; aud is checked against GOOGLE_CLIENT_ID.",
   tags: ["Auth"],
-  body: googleCallbackBody,
+  body: googleVerifyBody,
   response: {
     200: {
       type: "object",
@@ -92,6 +96,6 @@ const googleCallbackSchema = {
 
 export const authSchemas = {
   login: loginSchema,
-  googleCallback: googleCallbackSchema,
+  googleVerify: googleVerifySchema,
 };
 

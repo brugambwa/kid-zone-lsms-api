@@ -62,6 +62,12 @@ export const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_ID: str({ default: "" }),
   GOOGLE_CLIENT_SECRET: str({ default: "" }),
   GOOGLE_REDIRECT_URI: str({ default: "" }),
+  // SMTP / email configuration
+  SMTP_HOST: str({ default: "" }),
+  SMTP_PORT: port({ default: 587 }),
+  SMTP_USER: str({ default: "" }),
+  SMTP_PASS: str({ default: "" }),
+  SMTP_FROM: str({ default: "" }),
   ...(envConfigs[envPrefix as keyof typeof envConfigs] || envConfigs.DEV),
 });
 
@@ -77,4 +83,11 @@ export const JWT_EXPIRES_IN = env.JWT_EXPIRES_IN;
 export const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
 export const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
 export const GOOGLE_REDIRECT_URI = env.GOOGLE_REDIRECT_URI;
+
+export const SMTP_HOST = env.SMTP_HOST;
+export const SMTP_PORT = env.SMTP_PORT;
+export const SMTP_USER = env.SMTP_USER;
+export const SMTP_PASS = env.SMTP_PASS;
+export const SMTP_FROM = env.SMTP_FROM;
+
 

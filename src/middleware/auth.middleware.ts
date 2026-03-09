@@ -17,6 +17,13 @@ declare module "fastify" {
   }
 }
 
+const ACCESS_LEVEL_RANK: Record<string, number> = {
+  support: 1,
+  librarian: 2,
+  admin: 3,
+  super_admin: 4,
+};
+
 export async function verifyToken(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const authHeader = req.headers["authorization"];
 
@@ -33,3 +40,20 @@ export async function verifyToken(req: FastifyRequest, reply: FastifyReply): Pro
     throw new HttpError(401, "Invalid or expired token.");
   }
 }
+
+export const requireAccessLevel = (minLevel: "support" | "librarian" | "admin" | "super_admin") => {
+  return async (req: FastifyRequest, _reply: FastifyReply): Promise<void> => {
+    const currentLevel = req.admin?.access_level;
+    if (!currentLevel) {
+      throw new HttpError(401, "Authorization token is missing or malformed.");
+    }
+
+    const currentRank = ACCESS_LEVEL_RANK[currentLevel] ?? 0;
+    const requiredRank = ACCESS_LEVEL_RANK[minLevel];
+
+    if (currentRank < requiredRank) {
+      throw new HttpError(403, "You do not have permission to perform this action.");
+    }
+  };
+};
+

@@ -27,6 +27,15 @@ const authResponseData = {
   },
 } as const;
 
+const unifiedLoginResponseData = {
+  type: "object",
+  properties: {
+    user_type: { type: "string", enum: ["admin", "parent"] },
+    token: { type: "string" },
+    user: {},
+  },
+} as const;
+
 const loginBody = {
   type: "object",
   required: ["email", "password"],
@@ -48,7 +57,7 @@ const googleVerifyBody = {
 } as const;
 
 const loginSchema = {
-  description: "Login admin with email and password",
+  description: "Login with email and password (admin or parent/subscriber)",
   tags: ["Auth"],
   body: loginBody,
   response: {
@@ -56,7 +65,7 @@ const loginSchema = {
       type: "object",
       properties: {
         ...baseResponse,
-        data: authResponseData,
+        data: unifiedLoginResponseData,
       },
     },
     400: errorResponse,

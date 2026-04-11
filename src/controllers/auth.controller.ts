@@ -50,7 +50,7 @@ export class AuthController {
 
     const result = await this.authService.loginWithEmailPassword(email, password);
 
-    logger.info(`Admin login successful for ${email}.`);
+    logger.info(`${result.user_type} login successful for ${email}.`);
     return ResponseHandler.success(res, result, 100, "Login successful.");
   }
 

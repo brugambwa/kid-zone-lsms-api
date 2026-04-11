@@ -13,6 +13,13 @@ type AdminJwtPayload = {
   access_level: string;
   status: AdminStatus;
   provider: AuthProvider;
+  scope: "admin";
+};
+
+type ParentJwtPayload = {
+  sub: number;
+  email: string;
+  scope: "parent";
 };
 
 type AdminEntity = {
@@ -55,6 +62,7 @@ export class AuthService {
       access_level: admin.access_level,
       status: admin.status,
       provider: admin.auth_provider,
+      scope: "admin",
     };
 
     const secret: Secret = JWT_SECRET as Secret;
@@ -65,39 +73,79 @@ export class AuthService {
     return jwt.sign(payload, secret, options);
   }
 
+  private generateParentToken(subscriber_id: number, email_address: string): string {
+    const payload: ParentJwtPayload = {
+      sub: subscriber_id,
+      email: email_address,
+      scope: "parent",
+    };
+    const secret: Secret = JWT_SECRET as Secret;
+    const options: SignOptions = {
+      expiresIn: JWT_EXPIRES_IN as SignOptions["expiresIn"],
+    };
+    return jwt.sign(payload, secret, options);
+  }
+
+  private sanitizeSubscriber(row: Record<string, unknown>) {
+    const { password_hash, ...rest } = row;
+    return rest;
+  }
+
+  /**
+   * Unified login: try admin first, then subscriber (parent) with password_hash.
+   */
   async loginWithEmailPassword(email: string, password: string) {
     const admin = (await prismaAny.admins.findUnique({
       where: { email_address: email },
     })) as AdminEntity | null;
 
-    if (!admin || !admin.password_hash) {
+    if (admin) {
+      if (!admin.password_hash) {
+        throw new HttpError(401, "Invalid email or password.");
+      }
+      if (admin.status !== "active") {
+        throw new HttpError(403, "Admin account is not active.");
+      }
+      if (admin.auth_provider !== "local") {
+        throw new BadRequestError("This admin account uses Google login.");
+      }
+      const isValid = await bcrypt.compare(password, admin.password_hash);
+      if (!isValid) {
+        throw new HttpError(401, "Invalid email or password.");
+      }
+      const updatedAdmin = (await prismaAny.admins.update({
+        where: { admin_id: admin.admin_id },
+        data: { last_login_at: new Date() },
+      })) as AdminEntity;
+      const token = this.generateToken(updatedAdmin);
+      return {
+        user_type: "admin" as const,
+        token,
+        user: this.sanitizeAdmin(updatedAdmin),
+      };
+    }
+
+    const subscriber = (await prismaAny.subscribers.findUnique({
+      where: { email_address: email },
+    })) as Record<string, unknown> | null;
+
+    if (!subscriber || !subscriber.password_hash) {
       throw new HttpError(401, "Invalid email or password.");
     }
 
-    if (admin.status !== "active") {
-      throw new HttpError(403, "Admin account is not active.");
-    }
-
-    if (admin.auth_provider !== "local") {
-      throw new BadRequestError("This admin account uses Google login.");
-    }
-
-    const isValid = await bcrypt.compare(password, admin.password_hash);
-    if (!isValid) {
+    const isSubValid = await bcrypt.compare(password, subscriber.password_hash as string);
+    if (!isSubValid) {
       throw new HttpError(401, "Invalid email or password.");
     }
 
-    const updatedAdmin = (await prismaAny.admins.update({
-      where: { admin_id: admin.admin_id },
-      data: {
-        last_login_at: new Date(),
-      },
-    })) as AdminEntity;
-
-    const token = this.generateToken(updatedAdmin);
+    const token = this.generateParentToken(
+      subscriber.subscriber_id as number,
+      subscriber.email_address as string,
+    );
     return {
+      user_type: "parent" as const,
       token,
-      admin: this.sanitizeAdmin(updatedAdmin),
+      user: this.sanitizeSubscriber(subscriber),
     };
   }
 

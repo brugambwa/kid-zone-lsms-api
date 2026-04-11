@@ -3,6 +3,7 @@ import { ParentService, type ParentCreateSubscriptionInput } from "../services/p
 import { ResponseHandler } from "../utils/response";
 import { logger } from "../utils/logger";
 import { PaginationHandler } from "../utils/pagination.handler";
+import { parsePaginationQuery, type PaginationQuery } from "../utils/query.parser";
 
 type SignupBody = {
   first_name: string;
@@ -75,6 +76,28 @@ export class ParentController {
         success: "Subscriptions retrieved successfully.",
         successLog: "Parent subscriptions retrieved successfully.",
       },
+    );
+  }
+
+  async listOrderFulfillments(req: FastifyRequest, res: FastifyReply) {
+    const subscriber_id = req.parent!.sub;
+    const { order_id } = req.params as { order_id: number };
+    const { page, limit } = parsePaginationQuery(req.query as PaginationQuery);
+    const { data, total } = await this.parentService.listFulfillmentsForOrder(
+      subscriber_id,
+      order_id,
+      page,
+      limit,
+    );
+    const pagination = PaginationHandler.createPagination(page, limit, total);
+    logger.info(`Parent ${subscriber_id} listed fulfillments for order ${order_id}.`);
+    return ResponseHandler.success(
+      res,
+      data,
+      100,
+      "Order fulfillments retrieved successfully.",
+      200,
+      pagination,
     );
   }
 

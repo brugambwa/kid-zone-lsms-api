@@ -224,4 +224,45 @@ export class ParentService {
     ]);
     return { data, total };
   }
+
+  async listFulfillmentsForOrder(subscriber_id: number, order_id: number, page: number, limit: number) {
+    const order = await prismaDBConn.subscriberOrders.findFirst({
+      where: { order_id, subscriber_id },
+      select: { order_id: true },
+    });
+    if (!order) {
+      throw new HttpError(404, "Order not found.");
+    }
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      prismaDBConn.orderFulfillments.findMany({
+        where: { order_id },
+        include: { kz_fulfillment_items: true },
+        orderBy: { fulfillment_date: "desc" },
+        skip,
+        take: limit,
+      }),
+      prismaDBConn.orderFulfillments.count({ where: { order_id } }),
+    ]);
+
+    const isbns = [...new Set(data.flatMap((f) => f.kz_fulfillment_items.map((i) => i.book_isbn)))];
+    let titleByIsbn = new Map<string, string>();
+    if (isbns.length > 0) {
+      const books = await prismaDBConn.booksInventory.findMany({
+        where: { book_isbn: { in: isbns } },
+        select: { book_isbn: true, book_title: true },
+      });
+      titleByIsbn = new Map(books.map((b) => [b.book_isbn, b.book_title]));
+    }
+
+    const enriched = data.map((fulfillment) => ({
+      ...fulfillment,
+      kz_fulfillment_items: fulfillment.kz_fulfillment_items.map((item) => ({
+        ...item,
+        book_title: titleByIsbn.get(item.book_isbn) ?? null,
+      })),
+    }));
+
+    return { data: enriched, total };
+  }
 }

@@ -86,6 +86,17 @@ const beneficiaryIdParam = {
   },
 } as const;
 
+const orderIdParam = {
+  type: "object",
+  required: ["order_id"],
+  properties: {
+    order_id: {
+      type: "string",
+      pattern: String.raw`^[1-9][0-9]*$`,
+    },
+  },
+} as const;
+
 const subscriptionBeneficiaryOnCreate = {
   type: "object",
   required: [
@@ -236,6 +247,26 @@ export const parentSchemas = {
         },
       },
       401: errorResponse,
+      500: errorResponse,
+    },
+  } as const,
+  listOrderFulfillments: {
+    description: "List order fulfillments for one order (must belong to logged-in parent)",
+    tags: ["Parent"],
+    security: [{ bearerAuth: [] }],
+    params: orderIdParam,
+    querystring: paginationQuerystring,
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ...baseResponse,
+          data: { type: "array", items: {} },
+          pagination: paginationObject,
+        },
+      },
+      401: errorResponse,
+      404: errorResponse,
       500: errorResponse,
     },
   } as const,

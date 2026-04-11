@@ -1,9 +1,15 @@
 import bcrypt from "bcryptjs";
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
+import type {
+  subcription_billing_frequency,
+  subscription_link_active,
+  subscription_status,
+} from "@prisma/client";
 import { prismaDBConn } from "../config/prisma";
 import { JWT_EXPIRES_IN, JWT_SECRET } from "../config/constants";
 import { BadRequestError, HttpError } from "../utils/http.error";
 import { BeneficiaryService } from "./beneficiaries.service";
+import { SubscriptionService } from "./subscriptions.service";
 
 const prismaAny = prismaDBConn as any;
 
@@ -13,11 +19,31 @@ type ParentJwtPayload = {
   scope: "parent";
 };
 
+export type ParentCreateSubscriptionBeneficiaryInput = {
+  beneficiary_first_name: string;
+  beneficiary_last_name: string;
+  beneficiary_date_of_birth: string;
+  language_preference: string;
+  subscription_link_active: subscription_link_active;
+  no_of_books: number;
+  fullfilment_frequency: string;
+  fullfilment_start_date: string;
+};
+
+export type ParentCreateSubscriptionInput = {
+  subcription_billing_frequency: subcription_billing_frequency;
+  no_of_beneficiaries: number;
+  subscription_status: subscription_status;
+  beneficiaries: ParentCreateSubscriptionBeneficiaryInput[];
+};
+
 export class ParentService {
   private readonly beneficiaryService: BeneficiaryService;
+  private readonly subscriptionService: SubscriptionService;
 
   constructor() {
     this.beneficiaryService = new BeneficiaryService();
+    this.subscriptionService = new SubscriptionService();
   }
 
   private generateParentToken(subscriber_id: number, email: string): string {
@@ -167,5 +193,35 @@ export class ParentService {
       include: { orderFulfillments: true },
       orderBy: { order_date: "desc" },
     });
+  }
+
+  async createSubscription(subscriber_id: number, input: ParentCreateSubscriptionInput) {
+    if (input.beneficiaries.length < 1) {
+      throw new BadRequestError("At least one beneficiary is required.");
+    }
+    if (input.beneficiaries.length !== input.no_of_beneficiaries) {
+      throw new BadRequestError("no_of_beneficiaries must match the number of entries in beneficiaries.");
+    }
+    return this.subscriptionService.createSubscription(
+      subscriber_id,
+      input.subcription_billing_frequency,
+      input.no_of_beneficiaries,
+      input.subscription_status,
+      input.beneficiaries,
+    );
+  }
+
+  async listSubscriptions(subscriber_id: number, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      prismaAny.subscriptions.findMany({
+        where: { subscriber_id },
+        orderBy: { subcription_date: "desc" },
+        skip,
+        take: limit,
+      }),
+      prismaAny.subscriptions.count({ where: { subscriber_id } }),
+    ]);
+    return { data, total };
   }
 }

@@ -29,6 +29,18 @@ export async function parentRoutes(fastify: FastifyInstance) {
     asyncWrapper(parentController.addChild.bind(parentController)),
   );
 
+  fastify.post(
+    "/subscriptions",
+    { schema: parentSchemas.createSubscription, preHandler: [asyncWrapper(verifyParentToken)] },
+    asyncWrapper(parentController.createSubscription.bind(parentController)),
+  );
+
+  fastify.get(
+    "/subscriptions",
+    { schema: parentSchemas.listSubscriptions, preHandler: [asyncWrapper(verifyParentToken)] },
+    asyncWrapper(parentController.listSubscriptions.bind(parentController)),
+  );
+
   fastify.get(
     "/orders",
     { schema: parentSchemas.listOrders, preHandler: [asyncWrapper(verifyParentToken)] },

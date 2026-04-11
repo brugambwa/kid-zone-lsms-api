@@ -9,6 +9,7 @@ export type AuthAdminPayload = {
   access_level: string;
   status: string;
   provider: string;
+  scope?: string;
 };
 
 declare module "fastify" {
@@ -35,8 +36,12 @@ export async function verifyToken(req: FastifyRequest, reply: FastifyReply): Pro
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as unknown as AuthAdminPayload;
+    if (decoded.scope === "parent") {
+      throw new HttpError(401, "Invalid token for admin routes.");
+    }
     req.admin = decoded;
-  } catch {
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
     throw new HttpError(401, "Invalid or expired token.");
   }
 }

@@ -5,6 +5,7 @@ model Subscribers {
   last_name                     String                      @db.VarChar(255)
   telephone_number              String                      @unique @db.VarChar(255)
   email_address                 String                      @unique @db.VarChar(255)
+  password_hash                 String?                     @db.VarChar(255)
   village_id                    Int
   home_address                  String                      @db.VarChar(255)
   last_update_by                String?                     @db.VarChar(255)

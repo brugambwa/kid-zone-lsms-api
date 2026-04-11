@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { ParentService } from "../services/parent.service";
+import { ParentService, type ParentCreateSubscriptionInput } from "../services/parent.service";
 import { ResponseHandler } from "../utils/response";
 import { logger } from "../utils/logger";
 import { PaginationHandler } from "../utils/pagination.handler";
@@ -53,6 +53,29 @@ export class ParentController {
     const beneficiary = await this.parentService.addChild(subscriber_id, body);
     logger.info(`Parent ${subscriber_id} added child beneficiary ${beneficiary.beneficiary_id}.`);
     return ResponseHandler.success(res, beneficiary, 100, "Child added successfully.", 201);
+  }
+
+  async createSubscription(req: FastifyRequest, res: FastifyReply) {
+    const subscriber_id = req.parent!.sub;
+    const body = req.body as ParentCreateSubscriptionInput;
+    const subscription = await this.parentService.createSubscription(subscriber_id, body);
+    logger.info(`Parent ${subscriber_id} created subscription ${subscription.subscription_id}.`);
+    return ResponseHandler.success(res, subscription, 100, "Subscription created successfully.", 201);
+  }
+
+  async listSubscriptions(req: FastifyRequest, res: FastifyReply) {
+    const subscriber_id = req.parent!.sub;
+    return PaginationHandler.handlePaginatedRequest(
+      req,
+      res,
+      (page: number, limit: number) => this.parentService.listSubscriptions(subscriber_id, page, limit),
+      {
+        notFound: "No subscriptions found for this account.",
+        notFoundLog: "No subscriptions found for parent subscriber.",
+        success: "Subscriptions retrieved successfully.",
+        successLog: "Parent subscriptions retrieved successfully.",
+      },
+    );
   }
 
   async listOrders(req: FastifyRequest, res: FastifyReply) {

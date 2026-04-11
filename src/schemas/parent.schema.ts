@@ -86,6 +86,67 @@ const beneficiaryIdParam = {
   },
 } as const;
 
+const subscriptionBeneficiaryOnCreate = {
+  type: "object",
+  required: [
+    "beneficiary_first_name",
+    "beneficiary_last_name",
+    "beneficiary_date_of_birth",
+    "language_preference",
+    "subscription_link_active",
+    "no_of_books",
+    "fullfilment_frequency",
+    "fullfilment_start_date",
+  ],
+  properties: {
+    beneficiary_first_name: { type: "string" },
+    beneficiary_last_name: { type: "string" },
+    beneficiary_date_of_birth: { type: "string", format: "date" },
+    language_preference: { type: "string" },
+    subscription_link_active: { type: "string", enum: ["yes", "no"] },
+    no_of_books: { type: "number" },
+    fullfilment_frequency: { type: "string", enum: ["weekly", "bi_weekly"] },
+    fullfilment_start_date: { type: "string", format: "date" },
+  },
+} as const;
+
+const createParentSubscriptionBody = {
+  type: "object",
+  required: ["subcription_billing_frequency", "no_of_beneficiaries", "subscription_status", "beneficiaries"],
+  properties: {
+    subcription_billing_frequency: {
+      type: "string",
+      enum: ["monthly", "quarterly", "annually"],
+    },
+    no_of_beneficiaries: { type: "number", minimum: 1 },
+    subscription_status: {
+      type: "string",
+      enum: ["active", "inactive", "suspended", "canceled", "churned"],
+    },
+    beneficiaries: {
+      type: "array",
+      minItems: 1,
+      items: subscriptionBeneficiaryOnCreate,
+    },
+  },
+} as const;
+
+const parentSubscriptionRowSchema = {
+  type: "object",
+  properties: {
+    subcription_date: { type: "string", format: "date-time" },
+    subscription_id: { type: "number" },
+    subscriber_id: { type: "number" },
+    subcription_billing_frequency: { type: "string" },
+    no_of_beneficiaries: { type: "number" },
+    subscription_expiry_date: { type: "string", format: "date-time" },
+    subscription_status: { type: "string" },
+    last_update_at: { type: ["string", "null"], format: "date-time" },
+    last_update_to: { type: ["string", "null"] },
+    last_update_by: { type: ["string", "null"] },
+  },
+} as const;
+
 export const parentSchemas = {
   signup: {
     description: "Parent (subscriber) self-service signup",
@@ -124,6 +185,39 @@ export const parentSchemas = {
       400: errorResponse,
       401: errorResponse,
       403: errorResponse,
+      500: errorResponse,
+    },
+  } as const,
+  createSubscription: {
+    description: "Create subscription for logged-in parent (subscriber_id from token; creates beneficiaries and orders)",
+    tags: ["Parent"],
+    security: [{ bearerAuth: [] }],
+    body: createParentSubscriptionBody,
+    response: {
+      201: {
+        type: "object",
+        properties: { ...baseResponse, data: parentSubscriptionRowSchema },
+      },
+      400: errorResponse,
+      401: errorResponse,
+      500: errorResponse,
+    },
+  } as const,
+  listSubscriptions: {
+    description: "List subscriptions for logged-in parent (paginated)",
+    tags: ["Parent"],
+    security: [{ bearerAuth: [] }],
+    querystring: paginationQuerystring,
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ...baseResponse,
+          data: { type: "array", items: parentSubscriptionRowSchema },
+          pagination: paginationObject,
+        },
+      },
+      401: errorResponse,
       500: errorResponse,
     },
   } as const,

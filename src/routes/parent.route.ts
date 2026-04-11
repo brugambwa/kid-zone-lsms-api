@@ -48,6 +48,15 @@ export async function parentRoutes(fastify: FastifyInstance) {
   );
 
   fastify.get(
+    "/orders/:order_id/fulfillments",
+    {
+      schema: parentSchemas.listOrderFulfillments,
+      preHandler: [parseIntParam("order_id"), asyncWrapper(verifyParentToken)],
+    },
+    asyncWrapper(parentController.listOrderFulfillments.bind(parentController)),
+  );
+
+  fastify.get(
     "/children/:beneficiary_id/orders",
     {
       schema: parentSchemas.listOrdersForChild,
